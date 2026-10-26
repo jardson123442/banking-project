@@ -1,0 +1,43 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: ms-customer-bms-v1
+
+  threads:
+    virtual:
+      enabled: false
+
+  datasource:
+    url: jdbc:h2:mem:customerdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 5000
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    locations:
+      - classpath:db/migration-test
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        jdbc:
+          time_zone: UTC
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+    yaml:
+      enabled: true
