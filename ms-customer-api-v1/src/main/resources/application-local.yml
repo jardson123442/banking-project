@@ -1,0 +1,22 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: ms-customer-api-v1
+
+  threads:
+    virtual:
+      enabled: false
+
+integration:
+  customer-bms:
+    base-url: http://localhost:8083
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+    yaml:
+      enabled: true

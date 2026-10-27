@@ -1,6 +1,7 @@
 package com.v1.bms.project.application;
 
 import com.v1.bms.project.api.assembler.CustomerAccountOpeningAssembler;
+import com.v1.bms.project.api.disassembler.CustomerDisassembler;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
@@ -12,16 +13,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerAccountOpeningFacadeImpl implements CustomerAccountOpeningFacade {
 
-    private final CustomerAccountOpeningMapper customerAccountOpeningMapper;
     private final CustomerAccountOpeningService customerAccountOpeningService;
     private final CustomerAccountOpeningAssembler customerAccountOpeningAssembler;
+    private final CustomerDisassembler customerDisassembler;
 
 
     @Override
     public CustomerAccountOpeningCreateResponseDTO create(CustomerAccountOpeningCreateRequestDTO customerAccountOpeningCreateRequestDTO) {
         LogUtils.log(ApplicationConstants.CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "create");
 
-        var customerAccountOpeningCreateVO = customerAccountOpeningMapper.toCustomerAccountOpeningCreateVO(customerAccountOpeningCreateRequestDTO);
+        var customerAccountOpeningCreateVO = customerDisassembler.toDomainObject(customerAccountOpeningCreateRequestDTO, "Customer Account Opening created successfully", "Created");
         var result = customerAccountOpeningService.create(customerAccountOpeningCreateVO);
 
         return customerAccountOpeningAssembler.toModel(result, "Customer Account Opening created successfully", "Created");

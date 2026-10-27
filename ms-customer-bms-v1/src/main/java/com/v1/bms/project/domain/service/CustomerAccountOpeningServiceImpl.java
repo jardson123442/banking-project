@@ -52,9 +52,7 @@ public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpening
     public void validateAge(CustomerAccountOpeningCreateVO createVO) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "validateAge");
 
-
-        var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        var birthDate = LocalDate.parse(createVO.getBirthDate(), formatter);
+        var birthDate = LocalDate.parse(createVO.getBirthDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         var today = LocalDate.now();
 
         if (birthDate.isAfter(today)) {

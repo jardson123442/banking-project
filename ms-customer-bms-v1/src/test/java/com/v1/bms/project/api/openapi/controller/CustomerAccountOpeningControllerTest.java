@@ -4,6 +4,7 @@ import com.v1.bms.project.application.CustomerAccountOpeningFacade;
 import com.v1.bms.project.api.controller.CustomerAccountOpeningController;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
@@ -52,6 +53,7 @@ public class CustomerAccountOpeningControllerTest {
     private String name = "John Doe";
     private String email = "john.doe@example.com";
     private String birthDate = "1990-01-01";
+    private String underageBirthDate = "2010-01-01";
     private CustomerStatus status = CustomerStatus.ACTIVE;
 
     @BeforeEach
@@ -62,6 +64,7 @@ public class CustomerAccountOpeningControllerTest {
                 .email(email)
                 .birthDate(birthDate)
                 .build();
+
     }
     @Test
     @DisplayName("Deve criar um CustomerAccountOpening com sucesso")
@@ -98,6 +101,29 @@ public class CustomerAccountOpeningControllerTest {
         var requestCaptor = ArgumentCaptor.forClass(CustomerAccountOpeningCreateRequestDTO.class);
         verify(customerAccountOpeningFacade).create(requestCaptor.capture());
         assertEquals(birthDate, requestCaptor.getValue().getBirthDate());
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro ao criar conta com idade inferior a 18 anos")
+    void shouldReturnErrorWhenCreatingCustomerAccountOpeningWithUnderage() throws Exception {
+
+        var createRequestDTO = CustomerAccountOpeningCreateRequestDTO.builder()
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(underageBirthDate)
+                .build();
+
+        when(customerAccountOpeningFacade.create(createRequestDTO))
+                .thenThrow(new IllegalArgumentException("Customer must be at least 18 years old"));
+
+        mockMvc.perform(
+                        post(CUSTOMER_ACCOUNT_URL)
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(createRequestDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Customer must be at least 18 years old"));
     }
 
     @Test

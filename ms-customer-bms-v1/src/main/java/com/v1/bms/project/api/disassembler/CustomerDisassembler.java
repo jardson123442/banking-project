@@ -15,7 +15,7 @@ import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_M
 @RequiredArgsConstructor
 public class CustomerDisassembler {
 
-    public CustomerAccountOpeningCreateVO toDomainObject(CustomerAccountOpeningCreateRequestDTO customerAccountOpeningCreateRequestDTO) {
+    public CustomerAccountOpeningCreateVO toDomainObject(CustomerAccountOpeningCreateRequestDTO customerAccountOpeningCreateRequestDTO, String message, String status) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "toDomainObject");
 
         var createCustomerVo = CustomerAccountOpeningMapper.INSTANCE.toCustomerAccountOpeningCreateVO(customerAccountOpeningCreateRequestDTO);
