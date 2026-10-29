@@ -48,7 +48,7 @@ public interface CustomerAccountOpeningControllerOpenApi {
     )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    BmsCustomerResponseDto create(@Valid @RequestBody CreateCustomerRequestDTO customerAccountOpeningCreateRequestDTO);
+    void create(@Valid @RequestBody CreateCustomerRequestDTO customerAccountOpeningCreateRequestDTO);
 
     @Operation(
             summary   = "Retrieve a personal account opening request by CPF",

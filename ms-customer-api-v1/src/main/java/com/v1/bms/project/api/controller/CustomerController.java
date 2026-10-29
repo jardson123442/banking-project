@@ -12,24 +12,24 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.v1.bms.project.api.UrlConstant.CUSTOMER_ACCOUNT_URL_2;
+import static com.v1.bms.project.api.UrlConstant.CUSTOMER_ACCOUNT_API_URL;
 import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_MESSAGE_PATTERN;
 
 @Slf4j
 @Validated
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(CUSTOMER_ACCOUNT_URL_2)
+@RequestMapping(CUSTOMER_ACCOUNT_API_URL)
 public class CustomerController implements CustomerAccountOpeningControllerOpenApi {
 
     private final CustomerFacade customerFacade;
 
     @Override
-    public BmsCustomerResponseDto create(CreateCustomerRequestDTO customerRequestDTO) {
+    public void create(CreateCustomerRequestDTO customerRequestDTO) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "create");
         LogUtils.log("CreateCustomerRequestDTO {}", customerRequestDTO);
 
-        return this.customerFacade.create(customerRequestDTO);
+        this.customerFacade.create(customerRequestDTO);
     }
 
     @Override

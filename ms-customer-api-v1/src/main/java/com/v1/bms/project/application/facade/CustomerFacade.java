@@ -19,14 +19,21 @@ public class CustomerFacade {
 
     private final BmsCustomerService bmsCustomerService;
     private final CustomerDisassembler customerDisassembler;
-    private final CustomerAssembler customerAssembler;
 
-    public BmsCustomerResponseDto create(CreateCustomerRequestDTO createCustomerRequestDTO) {
+//    public BmsCustomerResponseDto create(CreateCustomerRequestDTO createCustomerRequestDTO) {
+//        LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "create");
+//        LogUtils.log("CreateCustomerRequestDTO {}", createCustomerRequestDTO);
+//
+//        var createCustomerVO = customerDisassembler.toDomainObject(createCustomerRequestDTO);
+//        return bmsCustomerService.createCustomer(createCustomerVO);
+//    }
+
+    public void create(CreateCustomerRequestDTO createCustomerRequestDTO) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "create");
         LogUtils.log("CreateCustomerRequestDTO {}", createCustomerRequestDTO);
 
         var createCustomerVO = customerDisassembler.toDomainObject(createCustomerRequestDTO);
-        return bmsCustomerService.createCustomer(createCustomerVO);
+        bmsCustomerService.createCustomer(createCustomerVO);
     }
 
     public BmsCustomerResponseDto findCustomerByCpf(String cpf) {
