@@ -53,6 +53,42 @@ A aplicação implementa as seguintes regras:
 5. **Cliente não encontrado:** retornar HTTP `404 Not Found` quando não existir solicitação de abertura para o CPF informado.
 6. **Dados inválidos:** retornar HTTP `400 Bad Request` quando o cliente não atender às regras de validação, incluindo a idade mínima.
 
+## Configuração do banco de dados
+
+A aplicação utiliza PostgreSQL para persistência dos dados, Flyway para gerenciamento de migrations, Spring Data JPA e Hibernate para mapeamento objeto-relacional, e HikariCP para gerenciamento do pool de conexões.
+
+### Pré-requisitos
+
+- PostgreSQL instalado e em execução.
+- Banco de dados `postgres` disponível localmente.
+- Credenciais de acesso configuradas na aplicação.
+
+### Conexão com o PostgreSQL
+
+Configuração utilizada no ambiente local:
+
+| Propriedade | Valor |
+|---|---|
+| SGBD | PostgreSQL |
+| Host | `localhost` |
+| Porta | `5432` |
+| Banco de dados | `postgres` |
+| Driver JDBC | `org.postgresql.Driver` |
+| Fuso horário JDBC | `UTC` |
+
+As credenciais devem ser configuradas de acordo com o ambiente de execução. Em ambientes compartilhados ou de produção, recomenda-se utilizar variáveis de ambiente ou um gerenciador de segredos, evitando armazenar senhas diretamente no repositório.
+
+### Migrations com Flyway
+
+O Flyway está habilitado para gerenciar as alterações do banco de dados.
+
+Diretórios configurados:
+
+- `classpath:db/migration-local`: migrations responsáveis pela estrutura do banco de dados.
+- `classpath:db/data-local`: scripts relacionados à carga de dados.
+
+A propriedade `baseline-on-migrate` está desabilitada. Dessa forma, o Flyway não cria automaticamente uma baseline para bancos existentes sem histórico de migrations.
+
 ## Endpoints
 
 ### 1. Microserviço BMS
