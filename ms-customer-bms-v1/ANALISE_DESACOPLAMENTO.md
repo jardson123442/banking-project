@@ -69,15 +69,13 @@ Assim, sua localização sugere que pertence ao domínio, mas seu conteúdo repr
 
 **Recomendação:** escolher uma única estratégia. Se a intenção for utilizar Spring, injetar o mapper no `CustomerDisassembler` e remover o `INSTANCE`. Alternativamente, se a intenção for não utilizar Spring nesse mapper, remover `componentModel = "spring"`.
 
-### 6. A conversão de API para domínio está localizada em uma classe da API que depende de um mapper da aplicação
+### 6. A conversão de API para domínio deve permanecer na borda HTTP
 
-`api/disassembler/CustomerDisassembler.java` conhece o DTO HTTP, o VO e o mapper localizado em `application`.
+O `CustomerDisassembler` da API converte o DTO HTTP para `CustomerAccountOpeningCreateVO`, utilizando um mapper localizado no pacote da API. O controller passa o VO à facade, que não precisa conhecer o DTO HTTP nem executar esse mapeamento.
 
-Além disso, recebe os parâmetros `message` e `status`, mas não os utiliza.
+**Impacto:** manter o mapeamento na borda HTTP evita que a aplicação dependa do contrato da API. A facade recebe um modelo de entrada independente do formato da requisição.
 
-**Impacto:** responsabilidades e dependências atravessam camadas, e parâmetros sem utilização deixam a interface mais confusa.
-
-**Recomendação:** manter a conversão do contrato HTTP para o comando da aplicação na borda da API ou em um mapper específico dessa camada. Remover os parâmetros não utilizados e manter o mapper focado em uma conversão explícita.
+**Recomendação:** manter o mapper na camada da API, remover parâmetros não utilizados e garantir que a conversão aconteça uma única vez, antes da chamada ao caso de uso.
 
 ### 7. A resposta da API utiliza um campo genérico para transportar o resultado
 

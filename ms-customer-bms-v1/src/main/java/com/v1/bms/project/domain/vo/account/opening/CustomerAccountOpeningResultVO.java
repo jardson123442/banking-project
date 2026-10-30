@@ -1,6 +1,6 @@
 package com.v1.bms.project.domain.vo.account.opening;
 
-import com.v1.bms.project.persistence.entity.CustomerStatus;
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

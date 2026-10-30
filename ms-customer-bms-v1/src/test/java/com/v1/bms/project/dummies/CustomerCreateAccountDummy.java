@@ -1,7 +1,7 @@
 package com.v1.bms.project.dummies;
 
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.persistence.entity.CustomerAccountOpeningRequestPersistenceEntity;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
 
 import java.time.LocalDateTime;
 

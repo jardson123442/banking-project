@@ -1,5 +1,6 @@
 package com.v1.bms.project.persistence.entity;
 
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

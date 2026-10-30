@@ -1,5 +1,8 @@
-package com.v1.bms.project.domain.vo.exceptions;
+package com.v1.bms.project.api.exception;
 
+import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
+import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
+import com.v1.bms.project.domain.vo.exceptions.UnderageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -2,13 +2,14 @@ package com.v1.bms.project.api.openapi.controller;
 
 import com.v1.bms.project.application.CustomerAccountOpeningFacade;
 import com.v1.bms.project.api.controller.CustomerAccountOpeningController;
+import com.v1.bms.project.api.disassembler.CustomerDisassembler;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
 import static com.v1.bms.project.api.UrlConstant.CUSTOMER_ACCOUNT_FIND_OWNER_URL;
@@ -39,6 +39,9 @@ public class CustomerAccountOpeningControllerTest {
 
     @MockitoBean
     private CustomerAccountOpeningFacade customerAccountOpeningFacade;
+
+    @MockitoBean
+    private CustomerDisassembler customerDisassembler;
 
     @Autowired
     private MockMvc mockMvc;
@@ -82,8 +85,15 @@ public class CustomerAccountOpeningControllerTest {
                 .build();
 
 
-        when(customerAccountOpeningFacade.create(
-                any(CustomerAccountOpeningCreateRequestDTO.class)))
+        var createVO = CustomerAccountOpeningCreateVO.builder()
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(birthDate)
+                .build();
+        when(customerDisassembler.toDomainObject(any(CustomerAccountOpeningCreateRequestDTO.class)))
+                .thenReturn(createVO);
+        when(customerAccountOpeningFacade.create(createVO))
                 .thenReturn(customerAccountOpeningCreateResponseDTO);
 
         mockMvc.perform(
@@ -99,8 +109,9 @@ public class CustomerAccountOpeningControllerTest {
                 .andExpect(jsonPath("$.message").value("Customer Account Opening created successfully"));
 
         var requestCaptor = ArgumentCaptor.forClass(CustomerAccountOpeningCreateRequestDTO.class);
-        verify(customerAccountOpeningFacade).create(requestCaptor.capture());
+        verify(customerDisassembler).toDomainObject(requestCaptor.capture());
         assertEquals(birthDate, requestCaptor.getValue().getBirthDate());
+        verify(customerAccountOpeningFacade).create(createVO);
     }
 
     @Test
@@ -114,7 +125,14 @@ public class CustomerAccountOpeningControllerTest {
                 .birthDate(underageBirthDate)
                 .build();
 
-        when(customerAccountOpeningFacade.create(createRequestDTO))
+        var createVO = CustomerAccountOpeningCreateVO.builder()
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(underageBirthDate)
+                .build();
+        when(customerDisassembler.toDomainObject(createRequestDTO)).thenReturn(createVO);
+        when(customerAccountOpeningFacade.create(createVO))
                 .thenThrow(new IllegalArgumentException("Customer must be at least 18 years old"));
 
         mockMvc.perform(
@@ -130,7 +148,15 @@ public class CustomerAccountOpeningControllerTest {
     @DisplayName("Deve retornar erro ao criar um CustomerAccountOpening com CPF já existente")
     void shouldReturnErrorWhenCreatingCustomerAccountOpeningWithExistingCpf() throws Exception {
 
-        when(customerAccountOpeningFacade.create(any(CustomerAccountOpeningCreateRequestDTO.class)))
+        var createVO = CustomerAccountOpeningCreateVO.builder()
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(birthDate)
+                .build();
+        when(customerDisassembler.toDomainObject(any(CustomerAccountOpeningCreateRequestDTO.class)))
+                .thenReturn(createVO);
+        when(customerAccountOpeningFacade.create(createVO))
                 .thenThrow(new CustomerCpfAlreadyInUse("CPF is already used: " + cpf));
 
         mockMvc.perform(
@@ -141,7 +167,7 @@ public class CustomerAccountOpeningControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("CPF is already used: " + cpf));
 
-        verify(customerAccountOpeningFacade).create(any());
+        verify(customerAccountOpeningFacade).create(createVO);
     }
 
     @Test

@@ -1,7 +1,9 @@
 package com.v1.bms.project.persistence;
 
+import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.persistence.entity.CustomerAccountOpeningRequestPersistenceEntity;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
+import com.v1.bms.project.persistence.repository.jpa.CustomerAccountJpaRepository;
 import com.v1.bms.project.persistence.repository.jpa.CustomerAccountOpeningRequestRepositoryImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,15 +23,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 @ActiveProfiles("test")
-class CustomerAccountOpeningRequestRepositoryTest {
+class CustomerAccountOpeningRequestRepositoryImplTest {
 
     @Autowired
-    private CustomerAccountOpeningRequestRepositoryImpl repository;
+    private CustomerAccountJpaRepository repository;
 
     @Test
     @DisplayName("Deve persistir e buscar uma solicitação pelo CPF")
     void shouldSaveAndFindByCpf() {
-        CustomerAccountOpeningRequestPersistenceEntity request =
+        var request =
                 CustomerAccountOpeningRequestPersistenceEntity.builder()
                         .name("Davi")
                         .cpf("91209419142")

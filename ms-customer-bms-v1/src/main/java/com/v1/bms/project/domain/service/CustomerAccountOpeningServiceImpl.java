@@ -2,12 +2,12 @@ package com.v1.bms.project.domain.service;
 
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
 import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
 import com.v1.bms.project.domain.vo.exceptions.UnderageException;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
 import com.v1.bms.project.persistence.repository.CustomerAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;

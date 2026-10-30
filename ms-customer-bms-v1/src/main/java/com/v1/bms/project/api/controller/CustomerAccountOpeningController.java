@@ -1,6 +1,7 @@
 package com.v1.bms.project.api.controller;
 
 import com.v1.bms.project.api.UrlConstant;
+import com.v1.bms.project.api.disassembler.CustomerDisassembler;
 import com.v1.bms.project.api.openapi.controller.CustomerAccountOpeningControllerOpenApi;
 import com.v1.bms.project.application.CustomerAccountOpeningFacade;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
@@ -19,12 +20,14 @@ import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_M
 @RequestMapping(UrlConstant.CUSTOMER_ACCOUNT_URL)
 public class CustomerAccountOpeningController implements CustomerAccountOpeningControllerOpenApi {
     private final CustomerAccountOpeningFacade customerAccountOpeningFacade;
+    private final CustomerDisassembler customerDisassembler;
 
     @Override
     public CustomerAccountOpeningCreateResponseDTO create(CustomerAccountOpeningCreateRequestDTO customerAccountOpeningCreateRequestDTO) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "create");
 
-        return customerAccountOpeningFacade.create(customerAccountOpeningCreateRequestDTO);
+        var createVO = customerDisassembler.toDomainObject(customerAccountOpeningCreateRequestDTO);
+        return customerAccountOpeningFacade.create(createVO);
     }
 
     @Override

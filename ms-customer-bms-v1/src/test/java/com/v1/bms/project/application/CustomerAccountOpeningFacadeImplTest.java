@@ -1,13 +1,12 @@
 package com.v1.bms.project.application;
 
 import com.v1.bms.project.api.assembler.CustomerAccountOpeningAssembler;
-import com.v1.bms.project.api.disassembler.CustomerDisassembler;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.domain.service.CustomerAccountOpeningService;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,16 +31,13 @@ class CustomerAccountOpeningFacadeImplTest {
     @Mock
     private CustomerAccountOpeningAssembler customerAccountOpeningAssembler;
 
-    @Mock
-    private CustomerDisassembler customerDisassembler;
-
     @InjectMocks
     private CustomerAccountOpeningFacadeImpl customerAccountOpeningFacade;
 
-    private CustomerAccountOpeningCreateRequestDTO createCustomerRequestDto;
     private CustomerAccountOpeningCreateResponseDTO createCustomerResponseDto;
     private CustomerAccountOpeningCreateVO createCustomerVO;
     private CustomerAccountOpeningResultVO createCustomerResultVO;
+    private CustomerAccountOpeningCreateRequestDTO createRequestDTO;
 
     private String requestId = "requestId";
     private String cpf = "12345678901";
@@ -58,13 +54,6 @@ class CustomerAccountOpeningFacadeImplTest {
 
     @BeforeEach
     void setUp() {
-        createCustomerRequestDto = CustomerAccountOpeningCreateRequestDTO.builder()
-                .cpf(cpf)
-                .name(name)
-                .email(email)
-                .birthDate(birthDate)
-                .build();
-
         createCustomerVO = CustomerAccountOpeningCreateVO.builder()
                 .cpf(cpf)
                 .name(name)
@@ -85,16 +74,18 @@ class CustomerAccountOpeningFacadeImplTest {
                 .status(CREATED_STATUS)
                 .createdAt(LocalDateTime.now())
                 .build();
+
+        createRequestDTO = CustomerAccountOpeningCreateRequestDTO.builder()
+                .cpf(cpf)
+                .name(name)
+                .birthDate(birthDate)
+                .email(email)
+                .build();
     }
 
     @Test
     @DisplayName("Deve criar uma conta de cliente com sucesso")
     void testCreateCustomerAccountOpening() {
-        when(customerDisassembler.toDomainObject(
-                createCustomerRequestDto,
-                CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE,
-                CREATED_STATUS
-        )).thenReturn(createCustomerVO);
         when(customerAccountOpeningService.create(createCustomerVO)).thenReturn(createCustomerResultVO);
         var expectedResponse = CustomerAccountOpeningCreateResponseDTO.builder()
                 .status(CREATED_STATUS)
@@ -108,7 +99,7 @@ class CustomerAccountOpeningFacadeImplTest {
                 CREATED_STATUS
         )).thenReturn(expectedResponse);
 
-        var response = customerAccountOpeningFacade.create(createCustomerRequestDto);
+        var response = customerAccountOpeningFacade.create(createCustomerVO);
 
         assertEquals(CREATED_STATUS, response.getStatus());
         assertEquals(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE, response.getMessage());

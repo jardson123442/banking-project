@@ -1,12 +1,12 @@
 package com.v1.bms.project.domain.service;
 
+import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
+import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
 import com.v1.bms.project.domain.vo.exceptions.UnderageException;
-import com.v1.bms.project.persistence.entity.CustomerAccountOpeningRequestPersistenceEntity;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
 import com.v1.bms.project.persistence.repository.jpa.CustomerAccountOpeningRequestRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,7 +48,7 @@ class CustomerAccountOpeningServiceImplTest {
     private final String FOUND_STATUS = "Found";
 
     private CustomerAccountOpeningCreateVO createCustomerVO;
-    private CustomerAccountOpeningRequestPersistenceEntity customerEntity;
+    private CustomerAccountOpeningRequestEntity customerEntity;
 
     @BeforeEach
     void setUp() {
@@ -59,7 +59,7 @@ class CustomerAccountOpeningServiceImplTest {
                 .birthDate(birthDate)
                 .build();
 
-        customerEntity = CustomerAccountOpeningRequestPersistenceEntity.builder()
+        customerEntity = CustomerAccountOpeningRequestEntity.builder()
                 .id(requestId)
                 .cpf(cpf)
                 .name(name)
@@ -76,7 +76,7 @@ class CustomerAccountOpeningServiceImplTest {
                 .thenReturn(Optional.empty());
 
         when(customerAccountOpeningRequestRepository.save(
-                any(CustomerAccountOpeningRequestPersistenceEntity.class)))
+                any(CustomerAccountOpeningRequestEntity.class)))
                 .thenReturn(customerEntity);
 
         CustomerAccountOpeningResultVO response =
@@ -88,8 +88,8 @@ class CustomerAccountOpeningServiceImplTest {
         assertEquals(name, response.getName());
         assertEquals(CustomerStatus.ACTIVE, response.getStatus());
 
-        ArgumentCaptor<CustomerAccountOpeningRequestPersistenceEntity> captor =
-                ArgumentCaptor.forClass(CustomerAccountOpeningRequestPersistenceEntity.class);
+        ArgumentCaptor<CustomerAccountOpeningRequestEntity> captor =
+                ArgumentCaptor.forClass(CustomerAccountOpeningRequestEntity.class);
 
         verify(customerAccountOpeningRequestRepository).save(captor.capture());
 
@@ -113,7 +113,7 @@ class CustomerAccountOpeningServiceImplTest {
         assertTrue(exception.getMessage().contains(cpf));
 
         verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestPersistenceEntity.class));
+                .save(any(CustomerAccountOpeningRequestEntity.class));
     }
 
     @Test
@@ -132,7 +132,7 @@ class CustomerAccountOpeningServiceImplTest {
         assertTrue(exception.getMessage().contains("at least"));
 
         verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestPersistenceEntity.class));
+                .save(any(CustomerAccountOpeningRequestEntity.class));
     }
 
     @Test
@@ -151,7 +151,7 @@ class CustomerAccountOpeningServiceImplTest {
         assertEquals("Invalid birth date", exception.getMessage());
 
         verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestPersistenceEntity.class));
+                .save(any(CustomerAccountOpeningRequestEntity.class));
     }
 
     @Test
@@ -171,7 +171,7 @@ class CustomerAccountOpeningServiceImplTest {
 
         verify(customerAccountOpeningRequestRepository).findByCpf(cpf);
         verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestPersistenceEntity.class));
+                .save(any(CustomerAccountOpeningRequestEntity.class));
     }
 
     @Test
@@ -195,7 +195,7 @@ class CustomerAccountOpeningServiceImplTest {
                 .thenReturn(Optional.empty());
 
         when(customerAccountOpeningRequestRepository.save(
-                any(CustomerAccountOpeningRequestPersistenceEntity.class)))
+                any(CustomerAccountOpeningRequestEntity.class)))
                 .thenThrow(new DataIntegrityViolationException("Constraint violation"));
 
         CustomerAccountNotFoundException exception = assertThrows(
