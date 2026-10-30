@@ -1,14 +1,14 @@
 package com.v1.bms.project.domain.service;
 
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
+import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
 import com.v1.bms.project.domain.vo.exceptions.UnderageException;
-import com.v1.bms.project.persistence.entity.CustomerAccountOpeningRequestPersistenceEntity;
 import com.v1.bms.project.persistence.entity.CustomerStatus;
-import com.v1.bms.project.persistence.repository.CustomerAccountOpeningRequestRepository;
+import com.v1.bms.project.persistence.repository.CustomerAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import static com.v1.bms.project.application.ApplicationConstants.MINIMUM_AGE;
 @RequiredArgsConstructor
 public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpeningService {
 
-    private final CustomerAccountOpeningRequestRepository customerAccountOpeningRequestRepository;
+    private final CustomerAccountRepository customerAccountRepository;
 
     @Override
     public CustomerAccountOpeningResultVO create(CustomerAccountOpeningCreateVO createVO) {
@@ -39,6 +39,7 @@ public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpening
         return toCustomerAccountOpeningResultVO(openedRequestEntity);
     }
 
+    //A validação de erro deixamos na operação ou criamos um metodo como feito acima.
     @Override
     public CustomerAccountOpeningResultVO findOwner(String customerCpf) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "findOwned");
@@ -68,7 +69,7 @@ public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpening
         }
     }
     private void validateExistingRequest(CustomerAccountOpeningCreateVO createVO) {
-        customerAccountOpeningRequestRepository
+        customerAccountRepository
                 .findByCpf(createVO.getCpf())
                 .ifPresent(existingRequest -> {
                     LogUtils.warn("CPF is already used: {}", createVO.getCpf());
@@ -76,28 +77,28 @@ public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpening
                 });
     }
 
-    private Optional<CustomerAccountOpeningRequestPersistenceEntity> findRequest(String customerCpf) {
-        return customerAccountOpeningRequestRepository.findByCpf(customerCpf);
+    private Optional<CustomerAccountOpeningRequestEntity> findRequest(String customerCpf) {
+        return customerAccountRepository.findByCpf(customerCpf);
     }
 
-    private CustomerCpfAlreadyInUse cpfExisting(CustomerAccountOpeningRequestPersistenceEntity existingRequest) {
+    private CustomerCpfAlreadyInUse cpfExisting(CustomerAccountOpeningRequestEntity existingRequest) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "replayExistingRequest");
 
         return new CustomerCpfAlreadyInUse("CPF is already used: " + existingRequest.getCpf());
     }
 
-    private CustomerAccountOpeningRequestPersistenceEntity persistRequest(CustomerAccountOpeningRequestPersistenceEntity request) {
+    private CustomerAccountOpeningRequestEntity persistRequest(CustomerAccountOpeningRequestEntity request) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "persistRequest");
 
         try {
-            return customerAccountOpeningRequestRepository.save(request);
+            return customerAccountRepository.save(request);
         } catch (DataIntegrityViolationException concurrentRequest) {
             LogUtils.warn("Account opening violates a database constraint: {}", concurrentRequest.getMostSpecificCause().getMessage());
             throw new CustomerAccountNotFoundException("Account opening conflicts with existing data");
         }
     }
 
-    private CustomerAccountOpeningResultVO toCustomerAccountOpeningResultVO(CustomerAccountOpeningRequestPersistenceEntity requestEntity) {
+    private CustomerAccountOpeningResultVO toCustomerAccountOpeningResultVO(CustomerAccountOpeningRequestEntity requestEntity) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "toCustomerAccountOpeningResultVO");
 
         return CustomerAccountOpeningResultVO.builder()
@@ -108,10 +109,10 @@ public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpening
                 .build();
     }
 
-    private CustomerAccountOpeningRequestPersistenceEntity newRequest(CustomerAccountOpeningCreateVO createVO) {
+    private CustomerAccountOpeningRequestEntity newRequest(CustomerAccountOpeningCreateVO createVO) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "newRequest");
 
-        return CustomerAccountOpeningRequestPersistenceEntity.builder()
+        return CustomerAccountOpeningRequestEntity.builder()
                 .name(createVO.getName())
                 .cpf(createVO.getCpf())
                 .birthDate(createVO.getBirthDate())

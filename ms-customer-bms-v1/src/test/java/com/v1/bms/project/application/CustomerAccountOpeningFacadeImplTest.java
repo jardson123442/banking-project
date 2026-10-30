@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +39,7 @@ class CustomerAccountOpeningFacadeImplTest {
     private CustomerAccountOpeningFacadeImpl customerAccountOpeningFacade;
 
     private CustomerAccountOpeningCreateRequestDTO createCustomerRequestDto;
+    private CustomerAccountOpeningCreateResponseDTO createCustomerResponseDto;
     private CustomerAccountOpeningCreateVO createCustomerVO;
     private CustomerAccountOpeningResultVO createCustomerResultVO;
 
@@ -51,6 +53,8 @@ class CustomerAccountOpeningFacadeImplTest {
 
     private final String CREATED_STATUS = "Created";
     private final String CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE = "Customer Account Opening created successfully";
+    private final String CUSTOMER_ACCOUNT_FOUND_MESSAGE = "Customer Account Opening found";
+    private final String FOUND_STATUS = "Found";
 
     @BeforeEach
     void setUp() {
@@ -73,6 +77,13 @@ class CustomerAccountOpeningFacadeImplTest {
                 .cpf(cpf)
                 .name(name)
                 .status(status)
+                .build();
+
+        createCustomerResponseDto = CustomerAccountOpeningCreateResponseDTO.builder()
+                .data(createCustomerResultVO)
+                .message(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE)
+                .status(CREATED_STATUS)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -102,5 +113,24 @@ class CustomerAccountOpeningFacadeImplTest {
         assertEquals(CREATED_STATUS, response.getStatus());
         assertEquals(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE, response.getMessage());
         assertEquals(createCustomerResultVO, response.getData());
+    }
+
+    @Test
+    @DisplayName("Deve retornar customer buscando pelo CPF")
+    void shouldReturnCustomerByCpf() {
+        when(customerAccountOpeningService.findOwner(cpf)).thenReturn(createCustomerResultVO);
+        when(customerAccountOpeningAssembler.toModel(createCustomerResultVO, CUSTOMER_ACCOUNT_FOUND_MESSAGE, FOUND_STATUS)).thenReturn(createCustomerResponseDto);
+
+        var result = customerAccountOpeningFacade.findOwner(cpf);
+
+        assertEquals(createCustomerResponseDto, result);
+        verify(customerAccountOpeningService).findOwner(cpf);
+        verify(customerAccountOpeningAssembler).toModel(createCustomerResultVO, CUSTOMER_ACCOUNT_FOUND_MESSAGE, FOUND_STATUS);
+
+        assertEquals(createCustomerResponseDto, result);
+        assertEquals(createCustomerResponseDto.getData(), result.getData());
+        assertEquals(createCustomerResponseDto.getMessage(), result.getMessage());
+        assertEquals(createCustomerResponseDto.getStatus(), result.getStatus());
+        assertEquals(createCustomerResponseDto.getCreatedAt(), result.getCreatedAt());
     }
 }

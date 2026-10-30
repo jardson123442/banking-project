@@ -4,6 +4,7 @@ import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateR
 import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
 
 public interface CustomerAccountOpeningFacade {
+
     CustomerAccountOpeningCreateResponseDTO create(CustomerAccountOpeningCreateRequestDTO customerAccountOpeningCreateRequestDTO);
 
     CustomerAccountOpeningCreateResponseDTO findOwner(String cpf);

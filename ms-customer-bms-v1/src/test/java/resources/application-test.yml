@@ -26,11 +26,12 @@ spring:
       - classpath:db/migration-test
 
   jpa:
+    database: h2
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
         jdbc:
           time_zone: UTC
 

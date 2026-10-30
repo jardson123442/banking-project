@@ -2,7 +2,6 @@ package com.v1.bms.project.configuration.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.v1.bms.project.persistence.entity.CustomerStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"name", "status", "createdAt"})
+@JsonPropertyOrder({"data", "name", "status", "createdAt"})
 public class CustomerAccountOpeningCreateResponseDTO implements Serializable {
 
     @Serial
