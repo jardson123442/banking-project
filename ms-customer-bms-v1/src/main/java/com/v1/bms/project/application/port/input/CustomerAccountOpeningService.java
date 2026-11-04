@@ -1,4 +1,4 @@
-package com.v1.bms.project.domain.service;
+package com.v1.bms.project.application.port.input;
 
 
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;

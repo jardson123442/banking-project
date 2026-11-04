@@ -1,6 +1,6 @@
 package com.v1.bms.project.api.assembler;
 
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import lombok.RequiredArgsConstructor;

@@ -1,5 +1,6 @@
-package com.v1.bms.project.configuration.common.dto;
+package com.v1.bms.project.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -30,7 +32,8 @@ public class CustomerAccountOpeningCreateRequestDTO implements Serializable {
     private String cpf;
 
     @NotBlank
-    private String birthDate;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private String birthDate;;
 
     @NotBlank
     private String email;

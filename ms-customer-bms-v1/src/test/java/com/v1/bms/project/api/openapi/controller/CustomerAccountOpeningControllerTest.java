@@ -3,13 +3,14 @@ package com.v1.bms.project.api.openapi.controller;
 import com.v1.bms.project.application.CustomerAccountOpeningFacade;
 import com.v1.bms.project.api.controller.CustomerAccountOpeningController;
 import com.v1.bms.project.api.disassembler.CustomerDisassembler;
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateRequestDTO;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
 import com.v1.bms.project.domain.enums.CustomerStatus;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
+import com.v1.bms.project.domain.vo.exceptions.UnderageException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,8 +56,8 @@ public class CustomerAccountOpeningControllerTest {
     private String cpf = "12345678901";
     private String name = "John Doe";
     private String email = "john.doe@example.com";
-    private String birthDate = "1990-01-01";
-    private String underageBirthDate = "2010-01-01";
+    private String birthDate = "01/01/1990";
+    private String underageBirthDate = "01/01/2010";
     private CustomerStatus status = CustomerStatus.ACTIVE;
 
     @BeforeEach
@@ -93,7 +94,7 @@ public class CustomerAccountOpeningControllerTest {
                 .build();
         when(customerDisassembler.toDomainObject(any(CustomerAccountOpeningCreateRequestDTO.class)))
                 .thenReturn(createVO);
-        when(customerAccountOpeningFacade.create(createVO))
+        when(customerAccountOpeningFacade.create(createCustomerRequestDto))
                 .thenReturn(customerAccountOpeningCreateResponseDTO);
 
         mockMvc.perform(
@@ -108,10 +109,13 @@ public class CustomerAccountOpeningControllerTest {
                 .andExpect(jsonPath("$.data.status").value(CustomerStatus.ACTIVE.name()))
                 .andExpect(jsonPath("$.message").value("Customer Account Opening created successfully"));
 
+
         var requestCaptor = ArgumentCaptor.forClass(CustomerAccountOpeningCreateRequestDTO.class);
-        verify(customerDisassembler).toDomainObject(requestCaptor.capture());
+        verify(customerAccountOpeningFacade).create(requestCaptor.capture());
+        assertEquals(cpf, requestCaptor.getValue().getCpf());
+        assertEquals(name, requestCaptor.getValue().getName());
+        assertEquals(email, requestCaptor.getValue().getEmail());
         assertEquals(birthDate, requestCaptor.getValue().getBirthDate());
-        verify(customerAccountOpeningFacade).create(createVO);
     }
 
     @Test
@@ -132,8 +136,8 @@ public class CustomerAccountOpeningControllerTest {
                 .birthDate(underageBirthDate)
                 .build();
         when(customerDisassembler.toDomainObject(createRequestDTO)).thenReturn(createVO);
-        when(customerAccountOpeningFacade.create(createVO))
-                .thenThrow(new IllegalArgumentException("Customer must be at least 18 years old"));
+        when(customerAccountOpeningFacade.create(createRequestDTO))
+                .thenThrow(new UnderageException("Customer must be at least 18 years old"));
 
         mockMvc.perform(
                         post(CUSTOMER_ACCOUNT_URL)
@@ -156,7 +160,7 @@ public class CustomerAccountOpeningControllerTest {
                 .build();
         when(customerDisassembler.toDomainObject(any(CustomerAccountOpeningCreateRequestDTO.class)))
                 .thenReturn(createVO);
-        when(customerAccountOpeningFacade.create(createVO))
+        when(customerAccountOpeningFacade.create(createCustomerRequestDto))
                 .thenThrow(new CustomerCpfAlreadyInUse("CPF is already used: " + cpf));
 
         mockMvc.perform(
@@ -167,7 +171,7 @@ public class CustomerAccountOpeningControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("CPF is already used: " + cpf));
 
-        verify(customerAccountOpeningFacade).create(createVO);
+        verify(customerAccountOpeningFacade).create(createCustomerRequestDto);
     }
 
     @Test

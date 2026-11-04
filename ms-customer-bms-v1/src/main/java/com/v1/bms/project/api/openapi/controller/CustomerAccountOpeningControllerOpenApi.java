@@ -1,8 +1,8 @@
 package com.v1.bms.project.api.openapi.controller;
 
 import com.v1.bms.project.configuration.common.OpenAPIResponseCodes;
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateRequestDTO;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,10 +1,11 @@
 package com.v1.bms.project.application;
 
 import com.v1.bms.project.api.assembler.CustomerAccountOpeningAssembler;
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateRequestDTO;
-import com.v1.bms.project.configuration.common.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.disassembler.CustomerDisassembler;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateRequestDTO;
+import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
 import com.v1.bms.project.domain.enums.CustomerStatus;
-import com.v1.bms.project.domain.service.CustomerAccountOpeningService;
+import com.v1.bms.project.application.port.input.CustomerAccountOpeningService;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
 import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,9 @@ class CustomerAccountOpeningFacadeImplTest {
 
     @Mock
     private CustomerAccountOpeningAssembler customerAccountOpeningAssembler;
+
+    @Mock
+    private CustomerDisassembler customerDisassembler;
 
     @InjectMocks
     private CustomerAccountOpeningFacadeImpl customerAccountOpeningFacade;
@@ -87,19 +91,22 @@ class CustomerAccountOpeningFacadeImplTest {
     @DisplayName("Deve criar uma conta de cliente com sucesso")
     void testCreateCustomerAccountOpening() {
         when(customerAccountOpeningService.create(createCustomerVO)).thenReturn(createCustomerResultVO);
-        var expectedResponse = CustomerAccountOpeningCreateResponseDTO.builder()
+        var expectedResponseDto = CustomerAccountOpeningCreateResponseDTO.builder()
                 .status(CREATED_STATUS)
                 .data(createCustomerResultVO)
                 .message(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE)
                 .createdAt(LocalDateTime.now())
                 .build();
+
         when(customerAccountOpeningAssembler.toModel(
                 createCustomerResultVO,
                 CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE,
                 CREATED_STATUS
-        )).thenReturn(expectedResponse);
+        )).thenReturn(expectedResponseDto);
+        when(customerDisassembler.toDomainObject(createRequestDTO)).thenReturn(createCustomerVO);
+        when(customerAccountOpeningService.create(createCustomerVO)).thenReturn(createCustomerResultVO);
 
-        var response = customerAccountOpeningFacade.create(createCustomerVO);
+        var response = customerAccountOpeningFacade.create(createRequestDTO);
 
         assertEquals(CREATED_STATUS, response.getStatus());
         assertEquals(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE, response.getMessage());

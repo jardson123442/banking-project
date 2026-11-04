@@ -1,5 +1,6 @@
 package com.v1.bms.project.domain.service;
 
+import com.v1.bms.project.application.port.input.CustomerAccountOpeningService;
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
 import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
 import com.v1.bms.project.domain.enums.CustomerStatus;
@@ -8,10 +9,8 @@ import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResult
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
 import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
 import com.v1.bms.project.domain.vo.exceptions.UnderageException;
-import com.v1.bms.project.persistence.repository.CustomerAccountRepository;
-import lombok.RequiredArgsConstructor;
+import com.v1.bms.project.application.port.output.CustomerAccountRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -19,13 +18,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_MESSAGE_PATTERN;
-import static com.v1.bms.project.application.ApplicationConstants.MINIMUM_AGE;
 
-@Service
-@RequiredArgsConstructor
 public class CustomerAccountOpeningServiceImpl implements CustomerAccountOpeningService {
 
-    private final CustomerAccountRepository customerAccountRepository;
+    private CustomerAccountRepository customerAccountRepository;
+
+    public void setCustomerAccountRepository(CustomerAccountRepository customerAccountRepository) {
+        this.customerAccountRepository = customerAccountRepository;
+    }
+
+    private static final int MINIMUM_AGE = 18;
 
     @Override
     public CustomerAccountOpeningResultVO create(CustomerAccountOpeningCreateVO createVO) {

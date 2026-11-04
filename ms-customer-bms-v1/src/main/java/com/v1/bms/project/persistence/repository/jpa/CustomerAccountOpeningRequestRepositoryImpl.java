@@ -3,7 +3,7 @@ package com.v1.bms.project.persistence.repository.jpa;
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
 import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
 import com.v1.bms.project.persistence.mapper.CustomerOpeningEntityMapper;
-import com.v1.bms.project.persistence.repository.CustomerAccountRepository;
+import com.v1.bms.project.application.port.output.CustomerAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_MESSAGE_PATTERN;
 
-@Repository
+@Repository("CustomerCustomJpaRepository")
 @RequiredArgsConstructor
 public class CustomerAccountOpeningRequestRepositoryImpl  implements CustomerAccountRepository {
 

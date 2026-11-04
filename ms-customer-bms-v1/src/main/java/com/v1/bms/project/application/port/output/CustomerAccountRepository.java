@@ -1,4 +1,4 @@
-package com.v1.bms.project.persistence.repository;
+package com.v1.bms.project.application.port.output;
 
 import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
 
