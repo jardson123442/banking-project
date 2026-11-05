@@ -1,13 +1,13 @@
 package com.v1.bms.project.application;
 
-import com.v1.bms.project.api.assembler.CustomerAccountOpeningAssembler;
+import com.v1.bms.project.api.assembler.CustomerAssembler;
 import com.v1.bms.project.api.disassembler.CustomerDisassembler;
-import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateRequestDTO;
-import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.dto.CustomerRequestDTO;
+import com.v1.bms.project.api.dto.CustomerResponseDTO;
 import com.v1.bms.project.domain.enums.CustomerStatus;
-import com.v1.bms.project.application.port.input.CustomerAccountOpeningService;
-import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
-import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
+import com.v1.bms.project.application.port.input.CustomerService;
+import com.v1.bms.project.domain.entity.CustomerEntity;
+import com.v1.bms.project.domain.vo.account.opening.CustomerResultVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,21 +27,21 @@ class CustomerAccountOpeningFacadeImplTest {
 
 
     @Mock
-    private CustomerAccountOpeningService customerAccountOpeningService;
+    private CustomerService customerService;
 
     @Mock
-    private CustomerAccountOpeningAssembler customerAccountOpeningAssembler;
+    private CustomerAssembler customerAssembler;
 
     @Mock
     private CustomerDisassembler customerDisassembler;
 
     @InjectMocks
-    private CustomerAccountOpeningFacadeImpl customerAccountOpeningFacade;
+    private CustomerFacadeImpl customerAccountOpeningFacade;
 
-    private CustomerAccountOpeningCreateResponseDTO createCustomerResponseDto;
-    private CustomerAccountOpeningCreateVO createCustomerVO;
-    private CustomerAccountOpeningResultVO createCustomerResultVO;
-    private CustomerAccountOpeningCreateRequestDTO createRequestDTO;
+    private CustomerResponseDTO createCustomerResponseDto;
+    private CustomerEntity createCustomerEntity;
+    private CustomerResultVO createCustomerResultVO;
+    private CustomerRequestDTO createRequestDTO;
 
     private String requestId = "requestId";
     private String cpf = "12345678901";
@@ -52,34 +52,35 @@ class CustomerAccountOpeningFacadeImplTest {
     private CustomerStatus status = CustomerStatus.ACTIVE;
 
     private final String CREATED_STATUS = "Created";
-    private final String CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE = "Customer Account Opening created successfully";
+    private final String CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE = "Customer created successfully";
     private final String CUSTOMER_ACCOUNT_FOUND_MESSAGE = "Customer Account Opening found";
     private final String FOUND_STATUS = "Found";
 
     @BeforeEach
     void setUp() {
-        createCustomerVO = CustomerAccountOpeningCreateVO.builder()
+        createCustomerEntity = CustomerEntity.builder()
                 .cpf(cpf)
                 .name(name)
                 .email(email)
                 .birthDate(birthDate)
+                .status(status)
                 .build();
 
-        createCustomerResultVO = CustomerAccountOpeningResultVO.builder()
+        createCustomerResultVO = CustomerResultVO.builder()
                 .id(requestId)
                 .cpf(cpf)
                 .name(name)
                 .status(status)
                 .build();
 
-        createCustomerResponseDto = CustomerAccountOpeningCreateResponseDTO.builder()
+        createCustomerResponseDto = CustomerResponseDTO.builder()
                 .data(createCustomerResultVO)
                 .message(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE)
                 .status(CREATED_STATUS)
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        createRequestDTO = CustomerAccountOpeningCreateRequestDTO.builder()
+        createRequestDTO = CustomerRequestDTO.builder()
                 .cpf(cpf)
                 .name(name)
                 .birthDate(birthDate)
@@ -90,40 +91,40 @@ class CustomerAccountOpeningFacadeImplTest {
     @Test
     @DisplayName("Deve criar uma conta de cliente com sucesso")
     void testCreateCustomerAccountOpening() {
-        when(customerAccountOpeningService.create(createCustomerVO)).thenReturn(createCustomerResultVO);
-        var expectedResponseDto = CustomerAccountOpeningCreateResponseDTO.builder()
+        var expectedResponseDto = CustomerResponseDTO.builder()
                 .status(CREATED_STATUS)
                 .data(createCustomerResultVO)
                 .message(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE)
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(customerAccountOpeningAssembler.toModel(
+        when(customerAssembler.toModel(
                 createCustomerResultVO,
                 CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE,
                 CREATED_STATUS
         )).thenReturn(expectedResponseDto);
-        when(customerDisassembler.toDomainObject(createRequestDTO)).thenReturn(createCustomerVO);
-        when(customerAccountOpeningService.create(createCustomerVO)).thenReturn(createCustomerResultVO);
+        when(customerDisassembler.toEntity(createRequestDTO)).thenReturn(createCustomerEntity);
+        when(customerService.create(createCustomerEntity)).thenReturn(createCustomerResultVO);
 
         var response = customerAccountOpeningFacade.create(createRequestDTO);
 
         assertEquals(CREATED_STATUS, response.getStatus());
         assertEquals(CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE, response.getMessage());
         assertEquals(createCustomerResultVO, response.getData());
+        verify(customerService).create(createCustomerEntity);
     }
 
     @Test
     @DisplayName("Deve retornar customer buscando pelo CPF")
     void shouldReturnCustomerByCpf() {
-        when(customerAccountOpeningService.findOwner(cpf)).thenReturn(createCustomerResultVO);
-        when(customerAccountOpeningAssembler.toModel(createCustomerResultVO, CUSTOMER_ACCOUNT_FOUND_MESSAGE, FOUND_STATUS)).thenReturn(createCustomerResponseDto);
+        when(customerService.findOwner(cpf)).thenReturn(createCustomerResultVO);
+        when(customerAssembler.toModel(createCustomerResultVO, CUSTOMER_ACCOUNT_FOUND_MESSAGE, FOUND_STATUS)).thenReturn(createCustomerResponseDto);
 
         var result = customerAccountOpeningFacade.findOwner(cpf);
 
         assertEquals(createCustomerResponseDto, result);
-        verify(customerAccountOpeningService).findOwner(cpf);
-        verify(customerAccountOpeningAssembler).toModel(createCustomerResultVO, CUSTOMER_ACCOUNT_FOUND_MESSAGE, FOUND_STATUS);
+        verify(customerService).findOwner(cpf);
+        verify(customerAssembler).toModel(createCustomerResultVO, CUSTOMER_ACCOUNT_FOUND_MESSAGE, FOUND_STATUS);
 
         assertEquals(createCustomerResponseDto, result);
         assertEquals(createCustomerResponseDto.getData(), result.getData());

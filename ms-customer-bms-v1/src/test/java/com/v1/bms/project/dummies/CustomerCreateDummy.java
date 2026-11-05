@@ -1,14 +1,14 @@
 package com.v1.bms.project.dummies;
 
 import com.v1.bms.project.domain.enums.CustomerStatus;
-import com.v1.bms.project.persistence.entity.CustomerAccountOpeningRequestPersistenceEntity;
+import com.v1.bms.project.persistence.entity.CustomerPersistenceEntity;
 
 import java.time.LocalDateTime;
 
-public class CustomerCreateAccountDummy {
+public class CustomerCreateDummy {
 
-    public static CustomerAccountOpeningRequestPersistenceEntity mockCustomerAccountOpeningRequestPersistenceEntity() {
-        return CustomerAccountOpeningRequestPersistenceEntity.builder()
+    public static CustomerPersistenceEntity mockCustomerRequestPersistenceEntity() {
+        return CustomerPersistenceEntity.builder()
                 .id("eaec1eed-e277-4da6-aa0e-fe98fa10f220")
                 .name("Davi")
                 .cpf("91209419142")

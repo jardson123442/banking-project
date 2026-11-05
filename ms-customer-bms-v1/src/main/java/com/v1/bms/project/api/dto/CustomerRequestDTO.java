@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
 
 @Data
 @Builder
@@ -20,7 +19,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CustomerAccountOpeningCreateRequestDTO implements Serializable {
+public class CustomerRequestDTO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = -3407781861443463955L;

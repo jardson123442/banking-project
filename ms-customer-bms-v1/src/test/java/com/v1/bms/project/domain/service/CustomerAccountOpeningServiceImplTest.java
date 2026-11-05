@@ -1,22 +1,20 @@
 package com.v1.bms.project.domain.service;
 
-import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
+import com.v1.bms.project.application.port.output.CustomerRepository;
+import com.v1.bms.project.domain.entity.CustomerEntity;
 import com.v1.bms.project.domain.enums.CustomerStatus;
-import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
-import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
+import com.v1.bms.project.domain.vo.account.opening.CustomerResultVO;
 import com.v1.bms.project.domain.vo.exceptions.CustomerAccountNotFoundException;
-import com.v1.bms.project.domain.vo.exceptions.CustomerCpfAlreadyInUse;
+import com.v1.bms.project.application.port.output.CustomerCpfAlreadyInUseException;
+import com.v1.bms.project.domain.vo.exceptions.NullAndBlankException;
 import com.v1.bms.project.domain.vo.exceptions.UnderageException;
-import com.v1.bms.project.persistence.repository.jpa.CustomerAccountOpeningRequestRepositoryImpl;
+import com.v1.bms.project.domain.validation.CustomerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
 
@@ -27,39 +25,28 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CustomerAccountOpeningServiceImplTest {
 
-    @Mock
-    private CustomerAccountOpeningRequestRepositoryImpl customerAccountOpeningRequestRepository;
+    private CustomerRepository customerRepository;
+    private CustomerServiceImpl customerServiceImpl;
+    private CustomerResultVO resultVO;
+    private CustomerEntity customerEntity;
 
-    @InjectMocks
-    private CustomerAccountOpeningServiceImpl customerAccountOpeningService;
 
     private String requestId = "requestId";
     private String cpf = "12345678901";
-    private String cpfEmpty = "";
     private String name = "John Doe";
     private String email = "john.doe@example.com";
     private String birthDate = "01/01/1990";
     private String underageBirthDate = "01/01/2010";
+    private String futureBirthDate = "01/01/2999";
     private CustomerStatus status = CustomerStatus.ACTIVE;
-
-    private final String CREATED_STATUS = "Created";
-    private final String CUSTOMER_CREATED_SUCCESSFULLY_MESSAGE = "Customer Account Opening created successfully";
-    private final String CUSTOMER_ACCOUNT_FOUND_MESSAGE = "Customer Account Opening found";
-    private final String FOUND_STATUS = "Found";
-
-    private CustomerAccountOpeningCreateVO createCustomerVO;
-    private CustomerAccountOpeningRequestEntity customerEntity;
 
     @BeforeEach
     void setUp() {
-        createCustomerVO = CustomerAccountOpeningCreateVO.builder()
-                .cpf(cpf)
-                .name(name)
-                .email(email)
-                .birthDate(birthDate)
-                .build();
+        this.customerRepository = mock(CustomerRepository.class);
+        CustomerValidator customerValidator = new CustomerValidator();
+        this.customerServiceImpl = new CustomerServiceImpl(customerRepository, customerValidator);
 
-        customerEntity = CustomerAccountOpeningRequestEntity.builder()
+        customerEntity = CustomerEntity.builder()
                 .id(requestId)
                 .cpf(cpf)
                 .name(name)
@@ -67,31 +54,41 @@ class CustomerAccountOpeningServiceImplTest {
                 .birthDate(birthDate)
                 .status(CustomerStatus.ACTIVE)
                 .build();
+
+        resultVO = CustomerResultVO.builder()
+                .id(requestId)
+                .cpf(cpf)
+                .name(name)
+                .status(status)
+                .build();
     }
 
     @Test
     @DisplayName("Deve criar uma conta de cliente com sucesso")
-    void shouldCreateCustomerAccountOpening() {
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
-                .thenReturn(Optional.empty());
+    void shouldCreateCustomerWithSuccess() {
+        var customerEntity = CustomerEntity.builder()
+                .id(requestId)
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(birthDate)
+                .status(CustomerStatus.ACTIVE)
+                .build();
 
-        when(customerAccountOpeningRequestRepository.save(
-                any(CustomerAccountOpeningRequestEntity.class)))
-                .thenReturn(customerEntity);
+        when(customerRepository.findByCpf(cpf)).thenReturn(Optional.empty());
+        when(customerRepository.save(any(CustomerEntity.class))).thenReturn(customerEntity);
 
-        CustomerAccountOpeningResultVO response =
-                customerAccountOpeningService.create(createCustomerVO);
+        CustomerResultVO response = customerServiceImpl.create(customerEntity);
 
-        assertNotNull(response);
-        assertEquals(requestId, response.getId());
-        assertEquals(cpf, response.getCpf());
-        assertEquals(name, response.getName());
-        assertEquals(CustomerStatus.ACTIVE, response.getStatus());
+        assertEquals(resultVO, response);
+        assertEquals(customerEntity.getId(), response.getId());
+        assertEquals(customerEntity.getCpf(), response.getCpf());
+        assertEquals(customerEntity.getName(), response.getName());
+        assertEquals(customerEntity.getStatus(), response.getStatus());
 
-        ArgumentCaptor<CustomerAccountOpeningRequestEntity> captor =
-                ArgumentCaptor.forClass(CustomerAccountOpeningRequestEntity.class);
+        ArgumentCaptor<CustomerEntity> captor = ArgumentCaptor.forClass(CustomerEntity.class);
 
-        verify(customerAccountOpeningRequestRepository).save(captor.capture());
+        verify(customerRepository).save(captor.capture());
 
         assertEquals(cpf, captor.getValue().getCpf());
         assertEquals(name, captor.getValue().getName());
@@ -100,68 +97,128 @@ class CustomerAccountOpeningServiceImplTest {
     }
 
     @Test
+    @DisplayName("Deve rejeitar campos nulos ou em branco antes de consultar o repositório")
+    void shouldRejectNullAndBlankRequiredFields() {
+        var invalidCustomers = new CustomerEntity[]{
+                createCustomerWith(null, cpf, birthDate, email),
+                createCustomerWith("   ", cpf, birthDate, email),
+                createCustomerWith(name, null, birthDate, email),
+                createCustomerWith(name, "   ", birthDate, email),
+                createCustomerWith(name, cpf, null, email),
+                createCustomerWith(name, cpf, "   ", email),
+                createCustomerWith(name, cpf, birthDate, null),
+                createCustomerWith(name, cpf, birthDate, "   ")
+        };
+
+        for (var customer : invalidCustomers) {
+            assertThrows(NullAndBlankException.class,
+                    () -> customerServiceImpl.create(customer));
+        }
+
+        verifyNoInteractions(customerRepository);
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção quando o CPF já estiver cadastrado")
     void shouldThrowExceptionWhenCpfAlreadyExists() {
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
-                .thenReturn(Optional.of(customerEntity));
+        var existingCustomer = CustomerEntity.builder()
+                .id(requestId)
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(birthDate)
+                .status(CustomerStatus.ACTIVE)
+                .build();
+        var newCustomer = CustomerEntity.builder()
+                .id(requestId)
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(birthDate)
+                .status(CustomerStatus.ACTIVE)
+                .build();
+        when(customerRepository.findByCpf(cpf))
+                .thenReturn(Optional.of(existingCustomer));
 
-        CustomerCpfAlreadyInUse exception = assertThrows(
-                CustomerCpfAlreadyInUse.class,
-                () -> customerAccountOpeningService.create(createCustomerVO)
+        CustomerCpfAlreadyInUseException exception = assertThrows(
+                CustomerCpfAlreadyInUseException.class,
+                () -> customerServiceImpl.create(newCustomer)
         );
 
-        assertTrue(exception.getMessage().contains(cpf));
+        assertEquals("CPF is already used: " + cpf, exception.getMessage());
+        verify(customerRepository).findByCpf(cpf);
+        verify(customerRepository, never()).save(any(CustomerEntity.class));
+    }
 
-        verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestEntity.class));
+    @Test
+    @DisplayName("Deve converter duplicidade reportada pela porta em erro de CPF já utilizado")
+    void shouldMapPortDuplicateCpfExceptionToDomainException() {
+        when(customerRepository.findByCpf(cpf))
+                .thenReturn(Optional.empty());
+        when(customerRepository.save(any(CustomerEntity.class)))
+                .thenThrow(new CustomerCpfAlreadyInUseException("CPF uniqueness constraint violated"));
+
+        var exception = assertThrows(
+                CustomerCpfAlreadyInUseException.class,
+                () -> customerServiceImpl.create(customerEntity)
+        );
+
+        assertEquals("CPF is already used: " + cpf, exception.getMessage());
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando o cliente for menor de idade")
     void shouldThrowExceptionWhenCustomerIsUnderage() {
-        createCustomerVO.setBirthDate(underageBirthDate);
-
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
-                .thenReturn(Optional.empty());
+        var customerEntity = CustomerEntity.builder()
+                .id(requestId)
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(underageBirthDate)
+                .status(CustomerStatus.ACTIVE)
+                .build();
 
         UnderageException exception = assertThrows(
                 UnderageException.class,
-                () -> customerAccountOpeningService.create(createCustomerVO)
+                () -> customerServiceImpl.create(customerEntity)
         );
 
-        assertTrue(exception.getMessage().contains("at least"));
+        assertTrue(exception.getMessage().contains("Customer must be at least 18 years old"));
 
-        verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestEntity.class));
+        verify(customerRepository, never())
+                .save(any(CustomerEntity.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando a data de nascimento for futura")
     void shouldThrowExceptionWhenBirthDateIsInTheFuture() {
-        createCustomerVO.setBirthDate("01/01/2999");
-
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
-                .thenReturn(Optional.empty());
+        customerEntity = CustomerEntity.builder()
+                .id(requestId)
+                .cpf(cpf)
+                .name(name)
+                .email(email)
+                .birthDate(futureBirthDate)
+                .status(CustomerStatus.ACTIVE)
+                .build();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> customerAccountOpeningService.create(createCustomerVO)
+                () -> customerServiceImpl.create(customerEntity)
         );
 
         assertEquals("Invalid birth date", exception.getMessage());
 
-        verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestEntity.class));
+        verify(customerRepository, never())
+                .save(any(CustomerEntity.class));
     }
 
     @Test
     @DisplayName("Deve retornar cliente buscando pelo CPF")
     void shouldReturnCustomerByCpf() {
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
+        when(customerRepository.findByCpf(cpf))
                 .thenReturn(Optional.of(customerEntity));
 
-        CustomerAccountOpeningResultVO response =
-                customerAccountOpeningService.findOwner(cpf);
+        CustomerResultVO response = customerServiceImpl.findOwner(cpf);
 
         assertNotNull(response);
         assertEquals(requestId, response.getId());
@@ -169,43 +226,32 @@ class CustomerAccountOpeningServiceImplTest {
         assertEquals(name, response.getName());
         assertEquals(CustomerStatus.ACTIVE, response.getStatus());
 
-        verify(customerAccountOpeningRequestRepository).findByCpf(cpf);
-        verify(customerAccountOpeningRequestRepository, never())
-                .save(any(CustomerAccountOpeningRequestEntity.class));
+        verify(customerRepository).findByCpf(cpf);
+        verify(customerRepository, never()).save(any(CustomerEntity.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando não encontrar cliente pelo CPF")
     void shouldThrowExceptionWhenCustomerIsNotFound() {
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
+        when(customerRepository.findByCpf(cpf))
                 .thenReturn(Optional.empty());
 
         CustomerAccountNotFoundException exception = assertThrows(
                 CustomerAccountNotFoundException.class,
-                () -> customerAccountOpeningService.findOwner(cpf)
+                () -> customerServiceImpl.findOwner(cpf)
         );
 
         assertTrue(exception.getMessage().contains(cpf));
     }
 
-    @Test
-    @DisplayName("Deve tratar violação de integridade ao salvar")
-    void shouldThrowExceptionWhenSaveViolatesDataIntegrity() {
-        when(customerAccountOpeningRequestRepository.findByCpf(cpf))
-                .thenReturn(Optional.empty());
-
-        when(customerAccountOpeningRequestRepository.save(
-                any(CustomerAccountOpeningRequestEntity.class)))
-                .thenThrow(new DataIntegrityViolationException("Constraint violation"));
-
-        CustomerAccountNotFoundException exception = assertThrows(
-                CustomerAccountNotFoundException.class,
-                () -> customerAccountOpeningService.create(createCustomerVO)
-        );
-
-        assertEquals(
-                "Account opening conflicts with existing data",
-                exception.getMessage()
-        );
+    private CustomerEntity createCustomerWith(String customerName, String customerCpf, String customerBirthDate, String customerEmail) {
+        return CustomerEntity.builder()
+                .id(requestId)
+                .cpf(customerCpf)
+                .name(customerName)
+                .email(customerEmail)
+                .birthDate(customerBirthDate)
+                .status(CustomerStatus.ACTIVE)
+                .build();
     }
 }

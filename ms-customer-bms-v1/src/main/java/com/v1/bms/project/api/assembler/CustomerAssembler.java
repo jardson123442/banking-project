@@ -1,8 +1,8 @@
 package com.v1.bms.project.api.assembler;
 
-import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.dto.CustomerResponseDTO;
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
-import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningResultVO;
+import com.v1.bms.project.domain.vo.account.opening.CustomerResultVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,12 +12,12 @@ import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_M
 
 @Component
 @RequiredArgsConstructor
-public class CustomerAccountOpeningAssembler {
+public class CustomerAssembler {
 
-    public CustomerAccountOpeningCreateResponseDTO toModel(CustomerAccountOpeningResultVO result, String message, String status) {
+    public CustomerResponseDTO toModel(CustomerResultVO result, String message, String status) {
         LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "toModel");
 
-        return CustomerAccountOpeningCreateResponseDTO.builder()
+        return CustomerResponseDTO.builder()
                 .data(result)
                 .message(message)
                 .status(status)

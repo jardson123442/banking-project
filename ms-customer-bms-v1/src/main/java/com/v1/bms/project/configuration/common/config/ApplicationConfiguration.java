@@ -1,30 +1,25 @@
 package com.v1.bms.project.configuration.common.config;
 
-import com.v1.bms.project.application.port.input.CustomerAccountOpeningService;
-import com.v1.bms.project.application.port.output.CustomerAccountRepository;
-import com.v1.bms.project.domain.service.CustomerAccountOpeningServiceImpl;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.v1.bms.project.application.port.input.CustomerService;
+import com.v1.bms.project.application.port.output.CustomerRepository;
+import com.v1.bms.project.domain.service.CustomerServiceImpl;
+import com.v1.bms.project.domain.validation.CustomerValidator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
 public class ApplicationConfiguration {
 
-    private CustomerAccountRepository customerAccountRepository;
+    @Bean
+    public CustomerService customerAccountOpeningService(
+            @Qualifier("CustomerCustomJpaRepository") CustomerRepository customerRepository,
+            CustomerValidator customerValidator) {
+        return new CustomerServiceImpl(customerRepository, customerValidator);
+    }
 
     @Bean
-    public CustomerAccountOpeningService customerAccountOpeningService() {
-        var customerservice =  new CustomerAccountOpeningServiceImpl();
-        customerservice.setCustomerAccountRepository(this.customerAccountRepository);
-        return customerservice;
+    public CustomerValidator customerValidator() {
+        return new CustomerValidator();
     }
-
-    @Autowired
-    public void setCustomerRepository(@Qualifier("CustomerCustomJpaRepository") CustomerAccountRepository customerAccountRepository) {
-        this.customerAccountRepository = customerAccountRepository;
-    }
-
 }

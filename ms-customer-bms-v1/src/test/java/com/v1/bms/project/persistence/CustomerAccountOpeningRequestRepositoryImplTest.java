@@ -1,10 +1,8 @@
 package com.v1.bms.project.persistence;
 
-import com.v1.bms.project.domain.entity.CustomerAccountOpeningRequestEntity;
 import com.v1.bms.project.domain.enums.CustomerStatus;
-import com.v1.bms.project.persistence.entity.CustomerAccountOpeningRequestPersistenceEntity;
-import com.v1.bms.project.persistence.repository.jpa.CustomerAccountJpaRepository;
-import com.v1.bms.project.persistence.repository.jpa.CustomerAccountOpeningRequestRepositoryImpl;
+import com.v1.bms.project.persistence.entity.CustomerPersistenceEntity;
+import com.v1.bms.project.persistence.repository.jpa.CustomerJpaRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CustomerAccountOpeningRequestRepositoryImplTest {
 
     @Autowired
-    private CustomerAccountJpaRepository repository;
+    private CustomerJpaRepository repository;
 
     @Test
     @DisplayName("Deve persistir e buscar uma solicitação pelo CPF")
     void shouldSaveAndFindByCpf() {
         var request =
-                CustomerAccountOpeningRequestPersistenceEntity.builder()
+                CustomerPersistenceEntity.builder()
                         .name("Davi")
                         .cpf("91209419142")
                         .birthDate("24/10/1991")
@@ -41,8 +39,8 @@ class CustomerAccountOpeningRequestRepositoryImplTest {
                         .createdAt(LocalDateTime.now())
                         .build();
 
-        CustomerAccountOpeningRequestPersistenceEntity savedRequest = repository.save(request);
-        Optional<CustomerAccountOpeningRequestPersistenceEntity> result =
+        CustomerPersistenceEntity savedRequest = repository.save(request);
+        Optional<CustomerPersistenceEntity> result =
                 repository.findByCpf("91209419142");
 
         assertTrue(result.isPresent());
@@ -56,7 +54,7 @@ class CustomerAccountOpeningRequestRepositoryImplTest {
     @Test
     @DisplayName("Deve retornar vazio quando não existir solicitação para o CPF")
     void shouldReturnEmptyWhenCpfDoesNotExist() {
-        Optional<CustomerAccountOpeningRequestPersistenceEntity> result =
+        Optional<CustomerPersistenceEntity> result =
                 repository.findByCpf("00000000000");
 
         assertFalse(result.isPresent());

@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"data", "name", "status", "createdAt"})
-public class CustomerAccountOpeningCreateResponseDTO implements Serializable {
+public class CustomerResponseDTO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = -3929158699633774599L;

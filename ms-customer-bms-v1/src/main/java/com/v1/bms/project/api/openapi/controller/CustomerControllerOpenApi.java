@@ -1,8 +1,8 @@
 package com.v1.bms.project.api.openapi.controller;
 
+import com.v1.bms.project.api.dto.CustomerRequestDTO;
 import com.v1.bms.project.configuration.common.OpenAPIResponseCodes;
-import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateRequestDTO;
-import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateResponseDTO;
+import com.v1.bms.project.api.dto.CustomerResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Customer Account Opening", description = "Endpoints for managing customer account opening")
-public interface CustomerAccountOpeningControllerOpenApi {
+public interface CustomerControllerOpenApi {
 
     @Operation(
             summary   = "Create a new personal account opening request",
@@ -48,7 +48,7 @@ public interface CustomerAccountOpeningControllerOpenApi {
     )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    CustomerAccountOpeningCreateResponseDTO create(@Valid @RequestBody CustomerAccountOpeningCreateRequestDTO customerAccountOpeningCreateRequestDTO);
+    CustomerResponseDTO create(@Valid @RequestBody CustomerRequestDTO customerRequestDTO);
 
     @Operation(
             summary   = "Retrieve a personal account opening request by CPF",
@@ -85,5 +85,5 @@ public interface CustomerAccountOpeningControllerOpenApi {
     )
     @GetMapping("/{customerCpf}")
     @ResponseStatus(HttpStatus.OK)
-    CustomerAccountOpeningCreateResponseDTO findOwner(@PathVariable String customerCpf);
+    CustomerResponseDTO findOwner(@PathVariable String customerCpf);
 }

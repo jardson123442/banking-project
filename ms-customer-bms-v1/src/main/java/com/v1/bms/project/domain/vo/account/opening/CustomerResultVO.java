@@ -1,4 +1,4 @@
-package com.v1.bms.project.domain.entity;
+package com.v1.bms.project.domain.vo.account.opening;
 
 import com.v1.bms.project.domain.enums.CustomerStatus;
 import lombok.AllArgsConstructor;
@@ -6,18 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerAccountOpeningRequestEntity {
+public class CustomerResultVO {
     private String id;
-    private String name;
     private String cpf;
-    private String birthDate;
-    private String email;
+    private String name;
     private CustomerStatus status;
-    private LocalDateTime createdAt;
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name="tb_customer_account_opening")
-public class CustomerAccountOpeningRequestPersistenceEntity {
+public class CustomerPersistenceEntity {
 
     @Id
     @Column(name = "id")

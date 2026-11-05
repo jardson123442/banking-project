@@ -1,9 +1,9 @@
 package com.v1.bms.project.api.disassembler;
 
-import com.v1.bms.project.api.dto.CustomerAccountOpeningCreateRequestDTO;
-import com.v1.bms.project.api.mapper.CustomerAccountOpeningMapper;
+import com.v1.bms.project.api.dto.CustomerRequestDTO;
+import com.v1.bms.project.api.mapper.CustomerMapper;
 import com.v1.bms.project.configuration.common.rest.util.LogUtils;
-import com.v1.bms.project.domain.vo.account.opening.CustomerAccountOpeningCreateVO;
+import com.v1.bms.project.domain.entity.CustomerEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +13,12 @@ import static com.v1.bms.project.application.ApplicationConstants.CLASS_METHOD_M
 @RequiredArgsConstructor
 public class CustomerDisassembler {
 
-    private final CustomerAccountOpeningMapper accountOpeningMapper;
+    private final CustomerMapper accountOpeningMapper;
 
-    public CustomerAccountOpeningCreateVO toDomainObject(
-            CustomerAccountOpeningCreateRequestDTO request) {
-        LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "toDomainObject");
+    public CustomerEntity toEntity(
+            CustomerRequestDTO request) {
+        LogUtils.log(CLASS_METHOD_MESSAGE_PATTERN, this.getClass().getSimpleName(), "toEntity");
 
-        return accountOpeningMapper.toCustomerAccountCreateVO(request);
+        return accountOpeningMapper.toCustomerEntity(request);
     }
 }

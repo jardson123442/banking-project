@@ -31,11 +31,11 @@ O arquivo `domain/service/CustomerAccountOpeningServiceImpl.java` importa o repo
 
 **Impacto:** as regras de negócio ficam vinculadas ao modelo e à tecnologia de banco de dados. Alterar a persistência ou testar o domínio isoladamente torna-se mais difícil.
 
-**Recomendação:** definir uma porta de saída na camada de aplicação ou domínio, por exemplo, `CustomerAccountRepository`, com operações de negócio como `findByCpf` e `save`. Implementar essa porta em `persistence`, utilizando o repositório Spring Data internamente. A entidade JPA e o repositório Spring Data devem permanecer como detalhes do adaptador.
+**Recomendação:** definir uma porta de saída na camada de aplicação ou domínio, por exemplo, `CustomerRepository`, com operações de negócio como `findByCpf` e `save`. Implementar essa porta em `persistence`, utilizando o repositório Spring Data internamente. A entidade JPA e o repositório Spring Data devem permanecer como detalhes do adaptador.
 
 ### 2. A camada de aplicação está acoplada aos contratos HTTP
 
-`CustomerAccountOpeningFacade` recebe e devolve `CustomerAccountOpeningCreateRequestDTO` e `CustomerAccountOpeningCreateResponseDTO`.
+`CustomerFacade` recebe e devolve `CustomerRequestDTO` e `CustomerResponseDTO`.
 
 Esses DTOs pertencem à borda HTTP, mas aparecem na interface da aplicação.
 
@@ -45,7 +45,7 @@ Esses DTOs pertencem à borda HTTP, mas aparecem na interface da aplicação.
 
 ### 3. O modelo de resultado expõe um tipo da persistência
 
-`CustomerAccountOpeningResultVO` utiliza `CustomerStatus`, que está localizado em `persistence/entity`.
+`CustomerResultVO` utiliza `CustomerStatus`, que está localizado em `persistence/entity`.
 
 **Impacto:** o modelo que atravessa o caso de uso depende de um tipo localizado na camada de persistência. Uma alteração na entidade ou no enum pode se propagar para outras camadas.
 
@@ -63,7 +63,7 @@ Assim, sua localização sugere que pertence ao domínio, mas seu conteúdo repr
 
 ### 5. O mapper MapStruct declara integração com Spring, mas é acessado como singleton estático
 
-`CustomerAccountOpeningMapper` declara `componentModel = "spring"`, porém `CustomerDisassembler` utiliza `CustomerAccountOpeningMapper.INSTANCE`.
+`CustomerMapper` declara `componentModel = "spring"`, porém `CustomerDisassembler` utiliza `CustomerAccountOpeningMapper.INSTANCE`.
 
 **Impacto:** o acesso estático ignora a instância gerenciada pelo Spring. Isso reduz a consistência da injeção de dependências e pode dificultar a inclusão futura de dependências ou configurações no mapper.
 
@@ -79,7 +79,7 @@ O `CustomerDisassembler` da API converte o DTO HTTP para `CustomerAccountOpening
 
 ### 7. A resposta da API utiliza um campo genérico para transportar o resultado
 
-`CustomerAccountOpeningCreateResponseDTO` declara o campo `data` como `Object` e `transient`.
+`CustomerResponseDTO` declara o campo `data` como `Object` e `transient`.
 
 **Impacto:** o contrato não expressa o tipo real do conteúdo e perde garantias de compilação. O formato efetivo da resposta fica mais difícil de compreender e documentar.
 
@@ -173,7 +173,7 @@ Não é necessário introduzir uma arquitetura mais complexa ou criar abstraçõ
 
 - **Testes para condições de concorrência:** validar o comportamento quando a restrição de unicidade do CPF é violada simultaneamente por operações concorrentes.
 
-Também vale revisar o tratamento de `DataIntegrityViolationException` em `CustomerAccountOpeningServiceImpl`: atualmente, essa exceção é convertida em `CustomerAccountNotFoundException`.
+Também vale revisar o tratamento de `DataIntegrityViolationException` em `CustomerServiceImpl`: atualmente, essa exceção é convertida em `CustomerAccountNotFoundException`.
 
 Uma violação de unicidade causada por concorrência deveria ser traduzida para um erro coerente com conflito ou CPF duplicado, mantendo a conversão para HTTP no adaptador da API.
 
